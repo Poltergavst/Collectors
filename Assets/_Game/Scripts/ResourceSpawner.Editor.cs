@@ -24,8 +24,15 @@ public partial class ResourceSpawner
             new Vector3(_radius * 2, 0, _radius * 2)
             );
 
-        Gizmos.color = Color.red;
-        DrawWireCircle(transform.position, _exclusionRadius);
+        foreach (var zone in _exclusionZones)
+        {
+            Bounds bounds = zone.bounds;
+
+            bounds.Expand(_exclusionExpandAmount);
+
+            Gizmos.color = Color.red;
+            DrawWireCircle(transform.position, bounds.extents.x);
+        }
 
         Gizmos.color = Color.green;
         DrawWireCircle(transform.position, _radius);

@@ -8,10 +8,11 @@ public class ObstacleAvoider : MonoBehaviour
     {
         bool obstacleFound;
         float castDistance = 10f;
-        Vector3 obstacleCheckerBounds = Vector3.one * 0.5f;
+        Vector3 obstacleCheckerBounds = Vector3.one * MathConstants.Half;
         Vector3 targetDirection = transform.position.DirectionTo(targetPosition);
 
-        obstacleFound = Physics.BoxCast(transform.position, obstacleCheckerBounds, targetDirection, out RaycastHit hit, Quaternion.identity, castDistance, _obstacles);
+        obstacleFound = Physics.BoxCast(transform.position, obstacleCheckerBounds, targetDirection, 
+            out RaycastHit hit, Quaternion.identity, castDistance, _obstacles);
 
         if (obstacleFound && IsObstacleCloserThanTarget(hit.point, targetPosition))
         {

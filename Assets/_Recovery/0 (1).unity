@@ -631,9 +631,7 @@ GameObject:
   - component: {fileID: 859794572}
   - component: {fileID: 859794571}
   - component: {fileID: 859794574}
-  - component: {fileID: 859794576}
   - component: {fileID: 859794575}
-  - component: {fileID: 859794577}
   m_Layer: 7
   m_Name: Base
   m_TagString: Untagged
@@ -728,6 +726,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Base
   _scanner: {fileID: 1754956980}
+  _botPrefab: {fileID: 9025387799156394028, guid: fd3d420be57d7fe48a08f48054fee3d5, type: 3}
+  _botsCount: 4
 --- !u!135 &859794575
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -749,33 +749,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.6930572
   m_Center: {x: 0, y: 0.537185, z: -0.000000047683717}
---- !u!114 &859794576
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 859794569}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9967e8a6ddda7334691f7bb40634c25e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UnitSpawner
-  _unitPrefab: {fileID: 9025387799156394028, guid: fd3d420be57d7fe48a08f48054fee3d5, type: 3}
-  spawnAmount: 5
-  spawnDistance: 4
---- !u!114 &859794577
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 859794569}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b8fab879461a8684b984999cc1a99a8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ResourceGatherer
 --- !u!1 &868999594
 GameObject:
   m_ObjectHideFlags: 0
@@ -1268,10 +1241,8 @@ MonoBehaviour:
   - {fileID: 2808194478666892774, guid: c5e6fd0517c8930448932a664b2445da, type: 3}
   - {fileID: 1197961242559862955, guid: 19e6660f7c89a9040858899fedde42a8, type: 3}
   - {fileID: 7456396752329347772, guid: 41099d5a14aebb84aa8176b62b2b48e2, type: 3}
-  _exclusionZones:
-  - {fileID: 859794575}
   _radius: 15
-  _exclusionExpandAmount: 9
+  _exclusionRadius: 9
   _maxToSpawn: 10
 --- !u!4 &1189151873
 Transform:
@@ -1407,13 +1378,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9c7f0d2d1ff31a49b60e1e90f37a415, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Scanner
-  _limit: 10
-  _radius: 20
+  _maxRadius: 20
   _layersToScan:
     serializedVersion: 2
     m_Bits: 64
-  _isTimed: 1
-  _interval: 2
 --- !u!1 &2017775289
 GameObject:
   m_ObjectHideFlags: 0
@@ -1459,7 +1427,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9131a2e231d2e034a85d89c62bdc3642, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StatsUI
-  _unitsCounter: {fileID: 872473271}
+  _botsCounter: {fileID: 872473271}
   _resoucreCounter: {fileID: 868999596}
   _base: {fileID: 859794574}
 --- !u!1 &2091317389

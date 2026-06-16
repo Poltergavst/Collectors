@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Drawing;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -7,8 +6,9 @@ public partial class ResourceSpawner : MonoBehaviour
 {
     [SerializeField] private Collider _base;
     [SerializeField] private Resource[] _prefabs;
+    [SerializeField] private Collider[] _exclusionZones;
     [SerializeField] private float _radius = 10;
-    [SerializeField] private float _exclusionRadius = 1;
+    [SerializeField] private float _exclusionExpandAmount = 1;
     [SerializeField] private int _maxToSpawn = 10;
 
     private int _index;
@@ -68,7 +68,7 @@ public partial class ResourceSpawner : MonoBehaviour
         _occupiedPoints.Add(resource, position);
 
         resource.gameObject.SetActive(true);
-        resource.GetComponent<Collider>().enabled = true;
+        resource.EnableForDetection();
     }
     
     private void OnRelease(Resource resource)
@@ -99,18 +99,33 @@ public partial class ResourceSpawner : MonoBehaviour
 
     private void SetUpPoints()
     {
+        float spaceBetweenPoints = 2f;
         Vector2 regionSize = Vector2.one * (_radius * 2);
         Vector2 regionOrigin = new Vector2(transform.position.x, transform.position.z);
-        Vector2 excludeCenter = regionOrigin;
 
-        _points = PoissonDiscSampling.GeneratePoints(1.5f, regionSize, 20);
+        _points = PoissonDiscSampling.GeneratePoints(spaceBetweenPoints, regionSize);
 
         for (int i = 0; i < _points.Count; i++)
             _points[i] = regionOrigin - regionSize * 0.5f + _points[i];
 
-        _points.RemoveAll(p => 
-        (p - excludeCenter).sqrMagnitude < _exclusionRadius * _exclusionRadius || 
-        (p - excludeCenter).sqrMagnitude > _radius * _radius);
+        _points.RemoveAll(p =>
+        {
+            Vector3 worldPoint = new Vector3(p.x, 0, p.y);
+
+            foreach (var zone in _exclusionZones)
+            {
+                Bounds bounds = zone.bounds;
+
+                bounds.Expand(_exclusionExpandAmount);
+
+                bool isInsideCircle = (worldPoint - bounds.center).sqrMagnitude < bounds.extents.x * bounds.extents.x;
+
+                if (bounds.Contains(worldPoint) && isInsideCircle)
+                    return true;
+            }
+
+            return (p - regionOrigin).sqrMagnitude > _radius * _radius;
+        });
 
         Shuffle(ref _points);
 

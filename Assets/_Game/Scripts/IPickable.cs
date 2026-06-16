@@ -2,11 +2,12 @@
 
 public interface IPickable
 {
+    public Vector3 GetCoordinates();
     public GameObject GameObject { get; }
 
-    public Vector3 GetCoordinates();
-
+    public void Drop(Vector3 position);
     public YieldInstruction PickUp(Transform container);
 
-    public void Drop();
+    public void EnableForDetection();
+    public void DisableForDetection();
 }

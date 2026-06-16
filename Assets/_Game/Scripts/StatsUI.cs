@@ -3,31 +3,31 @@ using TMPro;
 
 public class StatsUI : MonoBehaviour
 {
-    [SerializeField] private TMP_Text _botsCounter;
+    [SerializeField] private TMP_Text _unitsCounter;
     [SerializeField] private TMP_Text _resoucreCounter;
     [SerializeField] private Base _base;
 
     private void OnEnable()
     {
-        _base.UnitsChanged += UpdateBots;
-        _base.ResourcesChanged += UpdateResource;
+        _base.UnitsCountChanged += UpdateBots;
+        _base.ResourcesCountChanged += UpdateResource;
     }
 
     private void OnDisable()
     {
-        _base.UnitsChanged -= UpdateBots;
-        _base.ResourcesChanged -= UpdateResource;
+        _base.UnitsCountChanged -= UpdateBots;
+        _base.ResourcesCountChanged -= UpdateResource;
     }
 
     private void Start()
     {
-        _botsCounter.text = $"{_base.BotsCount}/{_base.BotsCount}";
+        _unitsCounter.text = $"{_base.UnitsCapacity}/{_base.UnitsCapacity}";
         _resoucreCounter.text = $"{_base.ResourceCounter}";
     }
 
     private void UpdateBots(int value)
     {
-        _botsCounter.text = $"{value}/{_base.BotsCount}";
+        _unitsCounter.text = $"{value}/{_base.UnitsCapacity}";
     }
 
     private void UpdateResource(int value)

@@ -2,127 +2,85 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(UnitSpawner), typeof(ResourceGatherer))]
 public class Base : MonoBehaviour
 {
     [SerializeField] private Scanner _scanner;
-    [SerializeField] private Unit _botPrefab;
-    [SerializeField] private int _botsCount  = 3;
 
-    private List<Unit> _availableUnits;
+    private UnitPool _unitPool;
+    private UnitSpawner _unitSpawner;
+    private ResourceGatherer _resourceGatherer;
 
-    private PlayerInput _playerInput;
-
-    public event Action<int> UnitsChanged;
-    public event Action<int> ResourcesChanged;
+    public event Action<int> UnitsCountChanged;
+    public event Action<int> ResourcesCountChanged;
 
     public int ResourceCounter { get; private set; }
-    public int BotsCount => _botsCount;
+    public int UnitsCapacity => _unitSpawner.Units.Capacity;
 
     private void Awake()
     {
-        _availableUnits = new();
-        _playerInput = new PlayerInput();
-
         ResourceCounter = 0;
 
-        _playerInput.Game.Scan.performed += _ => SearchForResources();
+        _unitSpawner = GetComponent<UnitSpawner>();
+        _resourceGatherer = GetComponent<ResourceGatherer>();
     }
 
-    private void OnEnable() => _playerInput.Enable();
-    private void OnDisable() => _playerInput.Disable();
+    private void OnEnable() => Subscribe();
+    private void OnDisable() => Unsubscribe();
 
-    private void Start() => InstantiateUnits();
-
-    private void InstantiateUnits()
+    private void Start()
     {
-        GameObject container = new("Units");
-
-        for (int i = 0; i < _botsCount; i++)
-        {
-            Vector3 spawnPosition = PickRandomPosition(i);
-            Vector3 lookDirection = Camera.main.transform.position - spawnPosition;
-            lookDirection.y = 0f;
-
-            Unit unit = Instantiate(_botPrefab, spawnPosition, Quaternion.LookRotation(lookDirection), container.transform);
-            unit.SetBase(this);
-            unit.Delivered += OnDelivered;
-
-            _availableUnits.Add(unit);
-        }
+        _unitSpawner.InstantiateUnits();
+        _unitPool = _unitSpawner.Units;
     }
 
-    private void SearchForResources()
+    private void FilterScanned(Collider[] scannedObjects)
     {
-        Dictionary<Unit, IPickable> assignedResources = new();
+        if (scannedObjects.Length == 0) return;
+
         List<IPickable> pickables = new();
 
-        foreach (Collider scannedObject in _scanner.Scan(10, transform.position))
+        foreach (Collider scannedObject in scannedObjects)
         {
-            if (scannedObject != null)
+            if (scannedObject != null && scannedObject.gameObject.TryGetComponent(out IPickable pickable))
             {
-                if (scannedObject.gameObject.TryGetComponent<IPickable>(out IPickable pickable))
-                {
-                    pickables.Add(pickable);
-                }
+                pickables.Add(pickable);
             }
         }
 
-        if (pickables.Count > 0)
-        {
-            var pairs = new List<(Unit unit, IPickable pickable, float distance)>();
-
-            foreach (Unit unit in _availableUnits)
-            {
-                foreach (IPickable pickable in pickables)
-                {
-                    float distance = (pickable.GetCoordinates() - unit.transform.position).sqrMagnitude;
-                    pairs.Add((unit, pickable, distance));
-                }
-            }
-
-            pairs.Sort((pair,nextPair) => pair.distance.CompareTo(nextPair.distance));
-
-            var usedUnits = new HashSet<Unit>();
-            var usedPickables = new HashSet<IPickable>();
-
-            foreach (var (unit, pickable, _) in pairs)
-            {
-                if (usedUnits.Contains(unit) || usedPickables.Contains(pickable))
-                    continue;
-
-                usedUnits.Add(unit);
-                usedPickables.Add(pickable);
-
-                unit.StartCollection(pickable);
-                _availableUnits.Remove(unit);
-                UnitsChanged?.Invoke(_availableUnits.Count);
-
-                pickable.GameObject.GetComponent<Collider>().enabled = false;
-            }
-        }
+        _resourceGatherer.SendGathering(pickables, _unitPool.GetUnits(), this);
     }
 
-    private Vector3 PickRandomPosition(int index)
+    private void OnAssigned(Unit unit, IPickable pickable)
     {
-        float angleStep = Mathf.PI / _botsCount;
+        _unitPool.Release(unit);
+        pickable.DisableForDetection();
 
-        float angle = index * angleStep + angleStep * 0.5f + Mathf.PI * 0.25f;
-        float radius = 1f + GetComponent<Collider>().bounds.extents.x;
-
-        float x = radius * Mathf.Cos(angle);
-        float z = radius * Mathf.Sin(angle);
-
-        return new Vector3(x, 0, z);
+        UnitsCountChanged?.Invoke(_unitPool.Count);
     }
 
-    private void OnDelivered(Unit unit, IPickable item)
+    private void OnDelivered(Unit unit, IPickable pickable)
     {
         ResourceCounter++;
-        ResourcesChanged?.Invoke(ResourceCounter);
 
-        item.Drop();
+        _unitPool.Return(unit);
+        pickable.Drop(transform.position);
 
-        _availableUnits.Add(unit);
-        UnitsChanged?.Invoke(_availableUnits.Count);
+        ResourcesCountChanged?.Invoke(ResourceCounter);
+        UnitsCountChanged?.Invoke(_unitPool.Count);
+    }
+
+    private void Subscribe()
+    {
+        _scanner.ScanPerformed += FilterScanned;
+        _resourceGatherer.Gathered += OnDelivered;
+        _resourceGatherer.Assigned += OnAssigned;
+    }
+
+    private void Unsubscribe()
+    {
+        _scanner.ScanPerformed -= FilterScanned;
+        _resourceGatherer.Gathered -= OnDelivered;
+        _resourceGatherer.Assigned -= OnAssigned;
     }
 }

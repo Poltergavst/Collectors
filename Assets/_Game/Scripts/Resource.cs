@@ -1,12 +1,18 @@
 using DG.Tweening;
 using UnityEngine;
-using static UnityEditor.Progress;
 
+[RequireComponent(typeof(Collider))]
 public class Resource : MonoBehaviour, IPickable
 {
     public GameObject GameObject => gameObject;
 
+    private Collider _collider;
     private ResourceSpawner _spawner;
+
+    private void Awake()
+    {
+        _collider = GetComponent<Collider>();
+    }
 
     public Vector3 GetCoordinates()
     {
@@ -27,9 +33,9 @@ public class Resource : MonoBehaviour, IPickable
         return tween.WaitForCompletion();
     }
 
-    public void Drop()
+    public void Drop(Vector3 position)
     {
-        Tween tween = transform.DOPath(new Vector3[] { transform.position, transform.position / 2f + new Vector3(0, 6, 0), Vector3.zero }, 0.6f, PathType.CatmullRom).SetEase(Ease.OutSine);
+        Tween tween = transform.DOPath(new Vector3[] { transform.position, transform.position / 2f + new Vector3(0, 6, 0), position }, 0.6f, PathType.CatmullRom).SetEase(Ease.OutSine);
 
         tween.OnComplete(() =>
         {
@@ -41,5 +47,15 @@ public class Resource : MonoBehaviour, IPickable
     public void AssignSpawner(ResourceSpawner spawner)
     {
         _spawner = spawner;
+    }
+
+    public void DisableForDetection()
+    {
+        _collider.enabled = false;
+    }
+
+    public void EnableForDetection()
+    {
+        _collider.enabled = true;
     }
 }

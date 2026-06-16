@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
@@ -7,12 +6,11 @@ public class Unit : MonoBehaviour
 {
     [SerializeField] private Transform _hand; 
 
-    private Base _base;
     private UnitMover _unitMover;
     private ObstacleAvoider _obstacleAvoider;
     private TargetReacher _reacher;
 
-    public event Action<Unit, IPickable> Delivered;
+    public Transform Hand => _hand;
 
     private void Awake()
     {
@@ -23,29 +21,10 @@ public class Unit : MonoBehaviour
         _reacher.Initialize(_unitMover);
     }
 
-    public void SetBase(Base homeBase)
-    {
-        _base = homeBase;
-    }
-
-    public void StartCollection(IPickable pickable)
-    {
-        StartCoroutine(CollectResource(pickable));
-    }
-
-    private IEnumerator CollectResource(IPickable pickable)
-    {
-        yield return GoForPickable(pickable.GetCoordinates());
-        yield return pickable.PickUp(_hand);
-        yield return DeliverToBase();
-
-        Delivered?.Invoke(this, pickable);
-    }
-
-    private IEnumerator GoForPickable(Vector3 target)
+    public IEnumerator NavigateTo(Vector3 target)
     {
         Vector3 direction;
-        float stoppingDistance = 0.2f;
+        float stoppingDistance = 1.25f;
 
         while (_obstacleAvoider.TryGetWorkaround(target, out direction))
         {
@@ -58,10 +37,12 @@ public class Unit : MonoBehaviour
         yield return _reacher.ReachTarget(target, stoppingDistance);
     }
 
-    private IEnumerator DeliverToBase()
+    public IEnumerator ReturnToBase(Base baze)
     {
-        float baseRadius = _base.GetComponent<Collider>().bounds.extents.x + 1;
+        float offset = 1f;
+        float baseRadius = baze.GetComponent<Collider>().bounds.extents.x + offset;
+        Vector3 basePosition = baze.transform.position;
 
-        yield return _reacher.ReachTarget(_base.transform.position, baseRadius);
+        yield return _reacher.ReachTarget(basePosition, baseRadius);
     }
 }

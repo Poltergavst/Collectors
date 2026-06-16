@@ -1,19 +1,81 @@
+using System;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 
 public class Scanner : MonoBehaviour
 {
-    [SerializeField] private float _maxRadius = 20f;
+    [SerializeField] private int _limit = 10;
+    [SerializeField] private float _radius = 20f;
     [SerializeField] private LayerMask _layersToScan;
+    [Header("---")]
+    [SerializeField] private bool _isTimed;
+    [SerializeField] private int _interval = 5;
 
-    public Collider[] Scan(int limit, Vector3 position)
+    private PlayerInput _playerInput;
+    private Coroutine _scanCoroutine;
+
+    public event Action<Collider[]> ScanPerformed;
+
+    private void Awake()
     {
-        Collider[] results = new Collider[limit];
+        _playerInput = new PlayerInput();
 
-        Physics.OverlapSphereNonAlloc(position, _maxRadius, results, _layersToScan);
+        _playerInput.Game.Scan.performed += _ => Scan(transform.position);
+    }
+
+    private void OnEnable() => _playerInput.Enable();
+    private void OnDisable() => _playerInput.Disable();
+
+    private void Start()
+    {
+        if (_isTimed)
+        {
+            _scanCoroutine = StartCoroutine(PerformIntervaledScan());
+        }
+    }
+
+    private void OnValidate()
+    {
+        _interval = Mathf.Max(0, _interval);
+
+        if (Application.isPlaying == false) 
+            return;
+
+        if (_scanCoroutine == null && _isTimed)
+        {
+            _scanCoroutine = StartCoroutine(PerformIntervaledScan());
+        }
+        else if (_scanCoroutine != null && _isTimed == false)
+        {
+            StopCoroutine(_scanCoroutine);
+            _scanCoroutine = null;
+        }
+    }
+
+    public Collider[] Scan(Vector3 position)
+    {
+        Collider[] results = new Collider[_limit];
+
+        Physics.OverlapSphereNonAlloc(position, _radius, results, _layersToScan);
 
         results = results.Where(collider => collider != null).OrderBy(collider => (collider.transform.position - position).sqrMagnitude).ToArray();
 
+        ScanPerformed?.Invoke(results);
+
         return results;
+    }
+
+    private IEnumerator PerformIntervaledScan()
+    {
+        var delay = new WaitForSeconds(_interval);
+        
+        while(_isTimed)
+        {
+            Scan(transform.position);
+            yield return delay;
+        }
+
+        _scanCoroutine = null;
     }
 }

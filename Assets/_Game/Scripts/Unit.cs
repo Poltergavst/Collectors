@@ -29,7 +29,7 @@ public class Unit : MonoBehaviour
         while (_obstacleAvoider.TryGetWorkaround(target, out direction))
         {
             _unitMover.Move(direction);
-            _unitMover.Rotate(direction);
+            _unitMover.RotateTo(direction);
 
             yield return null;
         }
@@ -37,11 +37,11 @@ public class Unit : MonoBehaviour
         yield return _reacher.ReachTarget(target, stoppingDistance);
     }
 
-    public IEnumerator ReturnToBase(Base baze)
+    public IEnumerator ReturnToBase(Base homeBase)
     {
         float offset = 1f;
-        float baseRadius = baze.GetComponent<Collider>().bounds.extents.x + offset;
-        Vector3 basePosition = baze.transform.position;
+        float baseRadius = homeBase.GetComponent<Collider>().bounds.extents.x + offset;
+        Vector3 basePosition = homeBase.transform.position;
 
         yield return _reacher.ReachTarget(basePosition, baseRadius);
     }

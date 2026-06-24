@@ -21,14 +21,14 @@ public partial class ResourceSpawner
 
         Gizmos.DrawWireCube(
             new Vector3(transform.position.x, 0, transform.position.z), 
-            new Vector3(_radius * 2, 0, _radius * 2)
+            new Vector3(_radius, 0, _radius) * 2
             );
 
         foreach (var zone in _exclusionZones)
         {
             Bounds bounds = zone.bounds;
 
-            bounds.Expand(_exclusionExpandAmount);
+            bounds.Expand(_exclusionExpansion);
 
             Gizmos.color = Color.red;
             DrawWireCircle(transform.position, bounds.extents.x);
@@ -41,29 +41,31 @@ public partial class ResourceSpawner
         {
             foreach (Vector2 point in _points)
             {
-                Vector3 worldPosition = new Vector3(point.x, transform.position.y, point.y);
+                Vector3 worldPosition = new (point.x, transform.position.y, point.y);
                 Gizmos.DrawSphere(worldPosition, _pointDisplayRadius);
             }
         }
     }
 
-    private void DrawWireCircle(Vector3 center, float radius, int segments = 16)
+    private void DrawWireCircle(Vector3 center, float radius, int segments = 12)
     {
         float fullCircle = 2 * Mathf.PI;
         float step = fullCircle / segments;
 
-        Vector3 prev = center + new Vector3(radius, 0, 0);
+        Vector3 previous = center + new Vector3(radius, 0, 0);
 
         for (int i = 1; i <= segments; i++)
         {
             float angle = i * step;
+
             Vector3 next = center + new Vector3(
                 Mathf.Cos(angle) * radius,
                 0,
                 Mathf.Sin(angle) * radius
             );
-            Gizmos.DrawLine(prev, next);
-            prev = next;
+
+            Gizmos.DrawLine(previous, next);
+            previous = next;
         }
     }
 }

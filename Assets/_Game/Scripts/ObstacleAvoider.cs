@@ -12,7 +12,7 @@ public class ObstacleAvoider : MonoBehaviour
         Vector3 targetDirection = transform.position.DirectionTo(targetPosition);
 
         obstacleFound = Physics.BoxCast(transform.position, obstacleCheckerBounds, targetDirection, 
-            out RaycastHit hit, Quaternion.identity, castDistance, _obstacles);
+            out RaycastHit hit, Quaternion.identity, castDistance, _obstacles); 
 
         if (obstacleFound && IsObstacleCloserThanTarget(hit.point, targetPosition))
         {
@@ -37,10 +37,10 @@ public class ObstacleAvoider : MonoBehaviour
     {
         float avoidJitteringThreshold = 0.2f;
 
-        Vector3 obstacleTangent = Vector3.Cross(obstacleNormal, Vector3.up).normalized;
+        Vector3 tangentToObstacle = Vector3.Cross(obstacleNormal, Vector3.up).normalized;
 
-        float DOT = Vector3.Dot(targetDirection, obstacleTangent);
+        float DOT = Vector3.Dot(targetDirection, tangentToObstacle);
 
-        return Mathf.Abs(DOT) < avoidJitteringThreshold ? obstacleTangent : Mathf.Sign(DOT) * obstacleTangent;
+        return Mathf.Abs(DOT) < avoidJitteringThreshold ? tangentToObstacle : Mathf.Sign(DOT) * tangentToObstacle;
     }
 }

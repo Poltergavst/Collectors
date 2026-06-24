@@ -27,10 +27,7 @@ public class ResourceGatherer : MonoBehaviour
         }
     }
 
-    private void StartCollection(Unit unit, IPickable pickable, Base homeBase)
-    {
-        StartCoroutine(CollectResource(unit, pickable, homeBase));
-    }
+    private void StartCollection(Unit unit, IPickable pickable, Base homeBase) => StartCoroutine(CollectResource(unit, pickable, homeBase));
 
     private IEnumerator CollectResource(Unit unit, IPickable pickable, Base homeBase)
     {

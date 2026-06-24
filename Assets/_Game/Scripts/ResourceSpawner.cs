@@ -8,8 +8,8 @@ public partial class ResourceSpawner : MonoBehaviour
     [SerializeField] private Resource[] _prefabs;
     [SerializeField] private Collider[] _exclusionZones;
     [SerializeField] private float _radius = 10;
-    [SerializeField] private float _exclusionExpandAmount = 1;
     [SerializeField] private int _maxToSpawn = 10;
+    [SerializeField] private float _exclusionExpansion = 1;
 
     private int _index;
     private List<Vector2> _points;
@@ -53,11 +53,11 @@ public partial class ResourceSpawner : MonoBehaviour
     {
         int tries = 0;
 
-        Vector3 position = PickRandomPosition();
+        Vector3 position = PickNextPosition();
 
         while (_occupiedPositions.Contains(position) && tries <= _maxToSpawn)
         {
-            position = PickRandomPosition();
+            position = PickNextPosition();
 
             tries++;
         }
@@ -91,7 +91,7 @@ public partial class ResourceSpawner : MonoBehaviour
 
         Resource prefab = _prefabs[Random.Range(0, _prefabs.Length)];
 
-        Resource resource = Instantiate(prefab, PickRandomPosition(), Quaternion.identity, transform);
+        Resource resource = Instantiate(prefab, PickNextPosition(), Quaternion.identity, transform);
         resource.AssignSpawner(this);
 
         return resource;
@@ -101,22 +101,22 @@ public partial class ResourceSpawner : MonoBehaviour
     {
         float spaceBetweenPoints = 2f;
         Vector2 regionSize = Vector2.one * (_radius * 2);
-        Vector2 regionOrigin = new Vector2(transform.position.x, transform.position.z);
+        Vector2 regionOrigin = new(transform.position.x, transform.position.z);
 
         _points = PoissonDiscSampling.GeneratePoints(spaceBetweenPoints, regionSize);
 
         for (int i = 0; i < _points.Count; i++)
-            _points[i] = regionOrigin - regionSize * 0.5f + _points[i];
+            _points[i] = regionOrigin - regionSize * MathConstants.Half + _points[i];
 
         _points.RemoveAll(p =>
         {
-            Vector3 worldPoint = new Vector3(p.x, 0, p.y);
+            Vector3 worldPoint = new (p.x, 0, p.y);
 
             foreach (var zone in _exclusionZones)
             {
                 Bounds bounds = zone.bounds;
 
-                bounds.Expand(_exclusionExpandAmount);
+                bounds.Expand(_exclusionExpansion);
 
                 bool isInsideCircle = (worldPoint - bounds.center).sqrMagnitude < bounds.extents.x * bounds.extents.x;
 
@@ -132,7 +132,7 @@ public partial class ResourceSpawner : MonoBehaviour
         _index = _points.Count;
     }
 
-    private Vector3 PickRandomPosition()
+    private Vector3 PickNextPosition()
     {
         _index--;
 

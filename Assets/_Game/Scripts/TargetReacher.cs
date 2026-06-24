@@ -17,7 +17,7 @@ public class TargetReacher : MonoBehaviour
         while (transform.position.IsEnoughCloseTo(target, stoppingDistance) == false)
         {
             _unitMover.Move(direction);
-            _unitMover.Rotate(direction);
+            _unitMover.RotateTo(direction);
 
             yield return null;
         }
@@ -33,7 +33,7 @@ public class TargetReacher : MonoBehaviour
 
         while (Quaternion.Angle(transform.rotation, targetRotation) > threshold)
         {
-            _unitMover.Rotate(direction);
+            _unitMover.RotateTo(direction);
             yield return null;
         }
     }

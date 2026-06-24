@@ -4,13 +4,17 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class Resource : MonoBehaviour, IPickable
 {
-    public GameObject GameObject => gameObject;
+    [SerializeField] private PickableAnimationConfig _config;
 
     private Collider _collider;
     private ResourceSpawner _spawner;
+    private ResourceAnimator _animator;
+
+    public GameObject GameObject => gameObject;
 
     private void Awake()
     {
+        _animator = new(transform, _config);
         _collider = GetComponent<Collider>();
     }
 
@@ -21,23 +25,14 @@ public class Resource : MonoBehaviour, IPickable
 
     public YieldInstruction PickUp(Transform container)
     {
-        Vector3 position = transform.position;
-        Vector3 containerPosition = container.position;
-
-        Vector3 middlePoint = transform.position + containerPosition / 2f;
-
-        transform.SetParent(container);
-
-        Tween tween = transform.DOLocalPath(new Vector3[] { transform.localPosition, transform.localPosition + new Vector3(0, 3, 0) ,Vector3.zero }, 0.5f, PathType.CatmullRom);
+        Tween tween = _animator.PlayPickUp(container.position).OnComplete(() => transform.SetParent(container));
 
         return tween.WaitForCompletion();
     }
 
-    public void Drop(Vector3 position)
+    public void Drop(Vector3 dropPosition)
     {
-        Tween tween = transform.DOPath(new Vector3[] { transform.position, transform.position / 2f + new Vector3(0, 6, 0), position }, 0.6f, PathType.CatmullRom).SetEase(Ease.OutSine);
-
-        tween.OnComplete(() =>
+        _animator.PlayDrop(dropPosition).OnComplete(() =>
         {
             transform.SetParent(_spawner.gameObject.transform);
             _spawner.Release(this);

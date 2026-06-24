@@ -1,12 +1,11 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class UnitSpawner : MonoBehaviour
 {
+    [SerializeField] private int _spawnAmount;
+    [SerializeField] private float _spawnDistance;
     [SerializeField] private Unit _unitPrefab;
-    [SerializeField] private int spawnAmount;
-    [SerializeField] private float spawnDistance;
 
     public UnitPool Units { get; private set; }
 
@@ -15,10 +14,13 @@ public class UnitSpawner : MonoBehaviour
         GameObject container = new("Units");
         List<Unit> units = new();
 
-        for (int i = 0; i < spawnAmount; i++)
+        Vector3 cameraPosition = Camera.main.transform.position;
+        float startAngle = GetInitialSpawnAngle(cameraPosition);
+
+        for (int i = 0; i < _spawnAmount; i++)
         {
-            Vector3 spawnPosition = GetSpawnPosition(i);
-            Vector3 lookDirection = (Camera.main.transform.position - spawnPosition).Change(y: 0);
+            Vector3 spawnPosition = GetSpawnPosition(i, startAngle);
+            Vector3 lookDirection = (cameraPosition - spawnPosition).Change(y: 0);
 
             units.Add(Instantiate(_unitPrefab, spawnPosition, Quaternion.LookRotation(lookDirection), container.transform));
         }
@@ -26,15 +28,22 @@ public class UnitSpawner : MonoBehaviour
         Units = new(units);
     }
 
-    private Vector3 GetSpawnPosition(int index)
+    private float GetInitialSpawnAngle(Vector3 cameraPosition)
     {
-        float angleStep = Mathf.PI / spawnAmount;
+        Vector3 directionToCamera = transform.position.DirectionTo(cameraPosition);
 
-        float angle = index * angleStep + angleStep * 0.5f + Mathf.PI * 0.25f;
-        float radius = spawnDistance;
+        float baseAngle = Mathf.Atan2(directionToCamera.z, directionToCamera.x);
+        
+        return baseAngle - Mathf.PI * MathConstants.Half;
+    }
 
-        float x = radius * Mathf.Cos(angle);
-        float z = radius * Mathf.Sin(angle);
+    private Vector3 GetSpawnPosition(int index, float startAngle)
+    {
+        float step = Mathf.PI / _spawnAmount;
+        float angle = startAngle + step * MathConstants.Half + index * step;
+
+        float x = _spawnDistance * Mathf.Cos(angle);
+        float z = _spawnDistance * Mathf.Sin(angle);
 
         return new Vector3(x, 0, z);
     }

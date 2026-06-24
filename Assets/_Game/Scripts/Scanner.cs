@@ -8,8 +8,9 @@ public class Scanner : MonoBehaviour
     [SerializeField] private int _limit = 10;
     [SerializeField] private float _radius = 20f;
     [SerializeField] private LayerMask _layersToScan;
-    [Header("---")]
-    [SerializeField] private bool _isTimed;
+    [Header("----------------")]
+    [SerializeField, Tooltip("При выкл. сканирование на Q")] 
+    private bool _isTimed;
     [SerializeField] private int _interval = 5;
 
     private PlayerInput _playerInput;

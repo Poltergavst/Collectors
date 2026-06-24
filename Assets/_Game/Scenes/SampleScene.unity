@@ -761,9 +761,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9967e8a6ddda7334691f7bb40634c25e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitSpawner
+  _spawnAmount: 3
+  _spawnDistance: 4
   _unitPrefab: {fileID: 9025387799156394028, guid: fd3d420be57d7fe48a08f48054fee3d5, type: 3}
-  spawnAmount: 5
-  spawnDistance: 4
 --- !u!114 &859794577
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1271,8 +1271,8 @@ MonoBehaviour:
   _exclusionZones:
   - {fileID: 859794575}
   _radius: 15
-  _exclusionExpandAmount: 9
   _maxToSpawn: 10
+  _exclusionExpansion: 3
 --- !u!4 &1189151873
 Transform:
   m_ObjectHideFlags: 0
@@ -1412,7 +1412,7 @@ MonoBehaviour:
   _layersToScan:
     serializedVersion: 2
     m_Bits: 64
-  _isTimed: 1
+  _isTimed: 0
   _interval: 2
 --- !u!1 &2017775289
 GameObject:

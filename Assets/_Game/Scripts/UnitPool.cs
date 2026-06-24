@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 public class UnitPool
 {
-    private readonly HashSet<Unit> _availableUnits = new();
+    private HashSet<Unit> _availableUnits = new();
 
     public int Capacity { get; private set; } = 0;
     public int Count => _availableUnits.Count;

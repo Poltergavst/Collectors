@@ -212,9 +212,9 @@
       "url": "https://packages.unity.com"
     },
     "utilspackage": {
-      "version": "file:D:/Dev/Unity projects/_MyPackagez/UtilsPackage",
+      "version": "file:UtilsPackage",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {
         "com.unity.test-framework": "1.6.0"
       }

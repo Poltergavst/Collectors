@@ -14,12 +14,12 @@ public class Base : MonoBehaviour
     public event Action<int> UnitsCountChanged;
     public event Action<int> ResourcesCountChanged;
 
-    public int ResourceCounter { get; private set; }
+    public int ResourceAvailable { get; private set; }
     public int UnitsCapacity => _unitSpawner.Units.Capacity;
 
     private void Awake()
     {
-        ResourceCounter = 0;
+        ResourceAvailable = 0;
 
         _unitSpawner = GetComponent<UnitSpawner>();
         _resourceGatherer = GetComponent<ResourceGatherer>();
@@ -48,7 +48,7 @@ public class Base : MonoBehaviour
             }
         }
 
-        _resourceGatherer.SendGathering(pickables, _unitPool.GetUnits(), this);
+        _resourceGatherer.SendGathering(pickables, _unitPool.Units, this);
     }
 
     private void OnAssigned(Unit unit, IPickable pickable)
@@ -61,12 +61,12 @@ public class Base : MonoBehaviour
 
     private void OnDelivered(Unit unit, IPickable pickable)
     {
-        ResourceCounter++;
+        ResourceAvailable++;
 
         _unitPool.Return(unit);
         pickable.Drop(transform.position);
 
-        ResourcesCountChanged?.Invoke(ResourceCounter);
+        ResourcesCountChanged?.Invoke(ResourceAvailable);
         UnitsCountChanged?.Invoke(_unitPool.Count);
     }
 

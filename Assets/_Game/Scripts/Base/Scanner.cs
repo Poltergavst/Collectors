@@ -18,6 +18,24 @@ public class Scanner : MonoBehaviour
 
     public event Action<Collider[]> ScanPerformed;
 
+    private void OnValidate()
+    {
+        _interval = Mathf.Max(0, _interval);
+
+        if (Application.isPlaying == false)
+            return;
+
+        if (_scanCoroutine == null && _isTimed)
+        {
+            _scanCoroutine = StartCoroutine(PerformIntervaledScan());
+        }
+        else if (_scanCoroutine != null && _isTimed == false)
+        {
+            StopCoroutine(_scanCoroutine);
+            _scanCoroutine = null;
+        }
+    }
+
     private void Awake()
     {
         _playerInput = new PlayerInput();
@@ -33,24 +51,6 @@ public class Scanner : MonoBehaviour
         if (_isTimed)
         {
             _scanCoroutine = StartCoroutine(PerformIntervaledScan());
-        }
-    }
-
-    private void OnValidate()
-    {
-        _interval = Mathf.Max(0, _interval);
-
-        if (Application.isPlaying == false) 
-            return;
-
-        if (_scanCoroutine == null && _isTimed)
-        {
-            _scanCoroutine = StartCoroutine(PerformIntervaledScan());
-        }
-        else if (_scanCoroutine != null && _isTimed == false)
-        {
-            StopCoroutine(_scanCoroutine);
-            _scanCoroutine = null;
         }
     }
 

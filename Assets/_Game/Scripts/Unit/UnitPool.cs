@@ -6,7 +6,7 @@ public class UnitPool
 
     public int Capacity { get; private set; } = 0;
     public int Count => _availableUnits.Count;
-    public IReadOnlyCollection<Unit> GetUnits() => _availableUnits;
+    public IReadOnlyCollection<Unit> Units => _availableUnits;
 
     public UnitPool(IEnumerable<Unit> spawnedUnits)
     {

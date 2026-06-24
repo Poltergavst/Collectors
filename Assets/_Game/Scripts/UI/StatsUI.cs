@@ -22,7 +22,7 @@ public class StatsUI : MonoBehaviour
     private void Start()
     {
         _unitsCounter.text = $"{_base.UnitsCapacity}/{_base.UnitsCapacity}";
-        _resoucreCounter.text = $"{_base.ResourceCounter}";
+        _resoucreCounter.text = $"{_base.ResourceAvailable}";
     }
 
     private void UpdateBots(int value)

@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class Carrier : MonoBehaviour
 {
-    [SerializeField] private PickableAnimationConfig _config;
+    [SerializeField] private CarrierAnimationsConfig _config;
     [SerializeField] private Transform _hand;
 
     private IPickable _pickable;
-    private PickableAnimator _animator;
+    private CarrierAnimator _animator;
 
     private void Awake()
     {

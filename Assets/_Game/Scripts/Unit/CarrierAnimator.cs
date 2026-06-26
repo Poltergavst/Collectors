@@ -1,11 +1,11 @@
 ﻿using DG.Tweening;
 using UnityEngine;
 
-public class PickableAnimator
+public class CarrierAnimator
 {
-    private PickableAnimationConfig _config;
+    private CarrierAnimationsConfig _config;
 
-    public PickableAnimator(PickableAnimationConfig config) => _config = config;
+    public CarrierAnimator(CarrierAnimationsConfig config) => _config = config;
 
     public Tween PlayPickUp(Transform transform, Vector3 endPosition) =>
         DoArcMove(transform, endPosition, _config.PickUpHeight, _config.PickUpDuration);

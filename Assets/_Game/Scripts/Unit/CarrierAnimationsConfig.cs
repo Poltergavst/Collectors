@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
-[CreateAssetMenu(fileName = "PickableAnimationConfig", menuName = "Configs/PickableAnimationConfig")]
-public class PickableAnimationConfig : ScriptableObject
+[CreateAssetMenu(fileName = "CarrierAnimationsConfig", menuName = "Configs/CarrierAnimationsConfig")]
+public class CarrierAnimationsConfig : ScriptableObject
 {
     [SerializeField] private float _pickUpDuration;
     [SerializeField] private float _pickUpHeight;

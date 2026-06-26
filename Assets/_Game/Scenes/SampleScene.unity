@@ -1243,6 +1243,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1189151873}
   - component: {fileID: 1189151872}
+  - component: {fileID: 1189151874}
   m_Layer: 0
   m_Name: ResourceSpawner
   m_TagString: Untagged
@@ -1262,17 +1263,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd788dd1f15b0c4798189e02072f754, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawner
-  _pointDisplayRadius: 0.2
-  _base: {fileID: 859794575}
+  _maxToSpawn: 10
+  _spawnInterval: 2
   _prefabs:
   - {fileID: 2808194478666892774, guid: c5e6fd0517c8930448932a664b2445da, type: 3}
   - {fileID: 1197961242559862955, guid: 19e6660f7c89a9040858899fedde42a8, type: 3}
   - {fileID: 7456396752329347772, guid: 41099d5a14aebb84aa8176b62b2b48e2, type: 3}
-  _exclusionZones:
-  - {fileID: 859794575}
-  _radius: 15
-  _maxToSpawn: 10
-  _exclusionExpansion: 3
+  _spawnpointsProvider: {fileID: 1189151874}
 --- !u!4 &1189151873
 Transform:
   m_ObjectHideFlags: 0
@@ -1288,6 +1285,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1189151874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1189151871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41ddc0863d1d1414788b7a2b1ed321d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpawnpointsProvider
+  _pointDisplayRadius: 0.21
+  _base: {fileID: 859794575}
+  _spaceBetweenPoints: 1.64
+  _radius: 11.46
+  _exclusionExpansion: 3.19
+  _exclusionZones:
+  - {fileID: 859794575}
 --- !u!1 &1383162255
 GameObject:
   m_ObjectHideFlags: 0
@@ -1412,7 +1428,7 @@ MonoBehaviour:
   _layersToScan:
     serializedVersion: 2
     m_Bits: 64
-  _isTimed: 0
+  _isTimed: 1
   _interval: 2
 --- !u!1 &2017775289
 GameObject:

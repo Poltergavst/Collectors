@@ -2,48 +2,41 @@ using System.Collections.Generic;
 
 public class ResourceAssigner
 {
-    public List<(Unit unit, IPickable pickable)> AssignResources(List<IPickable> pickables, IEnumerable<Unit> units)
+    public List<CollectionPair> AssignResources(List<IPickable> pickables, IEnumerable<Unit> units)
     {
-        var assignedPairs = new List<(Unit unit, IPickable pickable)>();
-
         var usedUnits = new HashSet<Unit>();
         var usedPickables = new HashSet<IPickable>();
+        var assignedPairs = new List<CollectionPair>();
 
-        List<(Unit unit, IPickable pickable, float distance)> pairs = new();
+        List<CollectionPair> candidates = new();
 
         if (pickables.Count > 0)
         {
-            pairs = GatherPairsByDistance(pickables, units);
+            candidates = GatherPairsByDistance(pickables, units);
         }
 
-        foreach (var (unit, pickable, _) in pairs)
+        foreach (var candidate in candidates)
         {
-            if (usedUnits.Contains(unit) || usedPickables.Contains(pickable))
+            if (usedUnits.Contains(candidate.Unit) || usedPickables.Contains(candidate.Pickable))
                 continue;
 
-            usedUnits.Add(unit);
-            usedPickables.Add(pickable);
-
-            assignedPairs.Add((unit, pickable));
+            usedUnits.Add(candidate.Unit);
+            usedPickables.Add(candidate.Pickable);
+            assignedPairs.Add(candidate);
         }
 
         return assignedPairs;
     }
 
-    private List<(Unit unit, IPickable pickable, float distance)> GatherPairsByDistance(List<IPickable> pickables, IEnumerable<Unit> units)
+    private List<CollectionPair> GatherPairsByDistance(List<IPickable> pickables, IEnumerable<Unit> units)
     {
-        var pairs = new List<(Unit unit, IPickable pickable, float distance)>();
+        var pairs = new List<CollectionPair>();
 
         foreach (Unit unit in units)
-        {
             foreach (IPickable pickable in pickables)
-            {
-                float distance = (pickable.GetCoordinates() - unit.transform.position).sqrMagnitude;
-                pairs.Add((unit, pickable, distance));
-            }
-        }
+                pairs.Add(new(unit, pickable));
 
-        pairs.Sort((pair, nextPair) => pair.distance.CompareTo(nextPair.distance));
+        pairs.Sort((pair, nextPair) => pair.SqrDistance.CompareTo(nextPair.SqrDistance));
 
         return pairs;
     }

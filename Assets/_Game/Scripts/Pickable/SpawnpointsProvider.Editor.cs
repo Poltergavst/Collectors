@@ -1,14 +1,13 @@
 #if UNITY_EDITOR
 using UnityEngine;
 
-public partial class ResourceSpawner
+public partial class SpawnpointsProvider
 {
     [SerializeField] private float _pointDisplayRadius = 1;
 
     void OnValidate()
     {
         _radius = Mathf.Max(0, _radius);
-        _maxToSpawn = Mathf.Max(0, _maxToSpawn);
 
         if (_base != null)
             SetUpPoints();
@@ -27,7 +26,6 @@ public partial class ResourceSpawner
         foreach (var zone in _exclusionZones)
         {
             Bounds bounds = zone.bounds;
-
             bounds.Expand(_exclusionExpansion);
 
             Gizmos.color = Color.red;

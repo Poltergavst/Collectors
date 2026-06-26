@@ -15,15 +15,15 @@ public class ResourceGatherer : MonoBehaviour
         _assigner = new();
     }
 
-    public void SendGathering(List<IPickable> rersources, IReadOnlyCollection<Unit> units, Base homeBase)
+    public void SendGathering(List<IPickable> resources, IReadOnlyCollection<Unit> units, Base homeBase)
     {
-        var assignedPairs = _assigner.AssignResources(rersources, units);
+        var assignedPairs = _assigner.AssignResources(resources, units);
 
-        foreach (var (unit, pickable) in assignedPairs)
+        foreach (var pair in assignedPairs)
         {
-            Assigned?.Invoke(unit, pickable);
+            Assigned?.Invoke(pair.Unit, pair.Pickable);
 
-            StartCollection(unit, pickable, homeBase);
+            StartCollection(pair.Unit, pair.Pickable, homeBase);
         }
     }
 
@@ -31,10 +31,7 @@ public class ResourceGatherer : MonoBehaviour
 
     private IEnumerator CollectResource(Unit unit, IPickable pickable, Base homeBase)
     {
-        yield return unit.NavigateTo(pickable.GetCoordinates());
-        yield return pickable.PickUp(unit.Hand);
-        yield return unit.ReturnToBase(homeBase);
-
+        yield return unit.Collect(pickable, homeBase);
         Gathered?.Invoke(unit, pickable);
     }
 }

@@ -7,7 +7,7 @@ public class UnitSpawner : MonoBehaviour
     [SerializeField] private float _spawnDistance;
     [SerializeField] private Unit _unitPrefab;
 
-    public UnitPool Units { get; private set; }
+    public UnitsRegistry Units { get; private set; }
 
     public void InstantiateUnits()
     {
@@ -22,7 +22,9 @@ public class UnitSpawner : MonoBehaviour
             Vector3 spawnPosition = GetSpawnPosition(i, startAngle);
             Vector3 lookDirection = (cameraPosition - spawnPosition).Change(y: 0);
 
-            units.Add(Instantiate(_unitPrefab, spawnPosition, Quaternion.LookRotation(lookDirection), container.transform));
+            Unit newUnit = Instantiate(_unitPrefab, spawnPosition, Quaternion.LookRotation(lookDirection), container.transform);
+
+            units.Add(newUnit);
         }
 
         Units = new(units);

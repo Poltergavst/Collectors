@@ -7,7 +7,7 @@ public class Base : MonoBehaviour
 {
     [SerializeField] private Scanner _scanner;
 
-    private UnitPool _unitPool;
+    private UnitsRegistry _unitRegistry;
     private UnitSpawner _unitSpawner;
     private ResourceGatherer _resourceGatherer;
 
@@ -31,7 +31,7 @@ public class Base : MonoBehaviour
     private void Start()
     {
         _unitSpawner.InstantiateUnits();
-        _unitPool = _unitSpawner.Units;
+        _unitRegistry = _unitSpawner.Units;
     }
 
     private void FilterScanned(Collider[] scannedObjects)
@@ -48,26 +48,25 @@ public class Base : MonoBehaviour
             }
         }
 
-        _resourceGatherer.SendGathering(pickables, _unitPool.Units, this);
+        _resourceGatherer.SendGathering(pickables, _unitRegistry.Units, this);
     }
 
     private void OnAssigned(Unit unit, IPickable pickable)
     {
-        _unitPool.Release(unit);
+        _unitRegistry.Release(unit);
         pickable.DisableForDetection();
 
-        UnitsCountChanged?.Invoke(_unitPool.Count);
+        UnitsCountChanged?.Invoke(_unitRegistry.Count);
     }
 
     private void OnDelivered(Unit unit, IPickable pickable)
     {
         ResourceAvailable++;
 
-        _unitPool.Return(unit);
-        pickable.Drop(transform.position);
+        _unitRegistry.Return(unit);
 
         ResourcesCountChanged?.Invoke(ResourceAvailable);
-        UnitsCountChanged?.Invoke(_unitPool.Count);
+        UnitsCountChanged?.Invoke(_unitRegistry.Count);
     }
 
     private void Subscribe()

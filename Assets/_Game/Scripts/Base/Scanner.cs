@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Scanner : MonoBehaviour
 {
@@ -39,8 +40,7 @@ public class Scanner : MonoBehaviour
     private void Awake()
     {
         _playerInput = new PlayerInput();
-
-        _playerInput.Game.Scan.performed += _ => Scan(transform.position);
+        _playerInput.Game.Scan.performed += OnScanInputPerformed;
     }
 
     private void OnEnable() => _playerInput.Enable();
@@ -53,6 +53,8 @@ public class Scanner : MonoBehaviour
             _scanCoroutine = StartCoroutine(PerformIntervaledScan());
         }
     }
+
+    private void OnDestroy() => _playerInput.Game.Scan.performed -= OnScanInputPerformed;
 
     public Collider[] Scan(Vector3 position)
     {
@@ -78,5 +80,10 @@ public class Scanner : MonoBehaviour
         }
 
         _scanCoroutine = null;
+    }
+
+    private void OnScanInputPerformed(InputAction.CallbackContext _)
+    {
+        Scan(transform.position);
     }
 }

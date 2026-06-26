@@ -2,21 +2,20 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(UnitMover), typeof(ObstacleAvoider), typeof(TargetReacher))]
+[RequireComponent(typeof(Carrier))]
 public class Unit : MonoBehaviour
 {
-    [SerializeField] private Transform _hand; 
-
+    private Carrier _carrier;
     private UnitMover _unitMover;
-    private ObstacleAvoider _obstacleAvoider;
     private TargetReacher _reacher;
-
-    public Transform Hand => _hand;
+    private ObstacleAvoider _obstacleAvoider;
 
     private void Awake()
     {
+        _carrier = GetComponent<Carrier>();
         _unitMover = GetComponent<UnitMover>();
-        _obstacleAvoider = GetComponent<ObstacleAvoider>();
         _reacher = GetComponent<TargetReacher>();
+        _obstacleAvoider = GetComponent<ObstacleAvoider>();
 
         _reacher.Initialize(_unitMover);
     }
@@ -44,5 +43,14 @@ public class Unit : MonoBehaviour
         Vector3 basePosition = homeBase.transform.position;
 
         yield return _reacher.ReachTarget(basePosition, baseRadius);
+    }
+
+    public IEnumerator Collect(IPickable pickable, Base homeBase)
+    {
+        yield return NavigateTo(pickable.GetCoordinates());
+        yield return _carrier.PickUp(pickable);
+        yield return ReturnToBase(homeBase);
+        
+        _carrier.Drop(homeBase.transform.position);
     }
 }

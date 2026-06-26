@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 
-public class UnitPool
+public class UnitsRegistry
 {
     private HashSet<Unit> _availableUnits = new();
+
+    public UnitsRegistry(IEnumerable<Unit> spawnedUnits)
+    {
+        Set(spawnedUnits);
+    }
 
     public int Capacity { get; private set; } = 0;
     public int Count => _availableUnits.Count;
     public IReadOnlyCollection<Unit> Units => _availableUnits;
-
-    public UnitPool(IEnumerable<Unit> spawnedUnits)
-    {
-        Set(spawnedUnits);
-    }
 
     public void Set(IEnumerable<Unit> spawnedUnits)
     {

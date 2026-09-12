@@ -1,85 +1,65 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(UnitSpawner), typeof(ResourceGatherer))]
+[RequireComponent(typeof(UnitSpawner), typeof(BaseBuilder), typeof(SphereCollider))]
 public class Base : MonoBehaviour
 {
     [SerializeField] private Scanner _scanner;
+    [SerializeField] private Base _basePrefab;
+    [SerializeField] private BaseConfig _baseConfig;
+    [SerializeField] private BaseBuilder _baseBuilder;
+    [SerializeField] private PlayerInputReader _inputReader;
+    [SerializeField] private SpawnpointsProvider _spawnpointsProvider;
 
-    private UnitsRegistry _unitRegistry;
-    private UnitSpawner _unitSpawner;
-    private ResourceGatherer _resourceGatherer;
+    private BaseCreator _creator;
+    private UnitSpawner _spawner;
+    private SharedBaseServices _shared;
 
-    public event Action<int> UnitsCountChanged;
-    public event Action<int> ResourcesCountChanged;
-
-    public int ResourceAvailable { get; private set; }
-    public int UnitsCapacity => _unitSpawner.Units.Capacity;
+    public SphereCollider Collider { get; private set; }
+    public BaseRuntime Runtime { get; private set; }
+    public UnitsRegistry UnitRegistry => Runtime.UnitRegistry;
+    public ResourceStorage ResourceStorage => Runtime.ResourceStorage;
 
     private void Awake()
     {
-        ResourceAvailable = 0;
+        UnitsRegistry registry = new ();
+        ResourceStorage storage = new ();
+        ResourceGatherer gatherer = new ();
+        ResourceDistributor distributor = new (storage);
 
-        _unitSpawner = GetComponent<UnitSpawner>();
-        _resourceGatherer = GetComponent<ResourceGatherer>();
+        _spawner = GetComponent<UnitSpawner>();
+        _baseBuilder = GetComponent<BaseBuilder>();
+        Collider = GetComponent<SphereCollider>();
+
+        _spawner.Initialise(registry);
+
+        UnitsConveyor conveyor = new (_spawner, distributor, registry, _baseConfig.CreationTime, _baseConfig.CreationPrice);
+
+        Runtime = new (this, conveyor, gatherer, distributor, registry, storage);
     }
 
-    private void OnEnable() => Subscribe();
-    private void OnDisable() => Unsubscribe();
+    private void OnEnable() => _scanner.ScanPerformed += Runtime.OnScanned;
+
+    private void OnDisable() => _scanner.ScanPerformed -= Runtime.OnScanned;
 
     private void Start()
     {
-        _unitSpawner.InstantiateUnits();
-        _unitRegistry = _unitSpawner.Units;
-    }
-
-    private void FilterScanned(Collider[] scannedObjects)
-    {
-        if (scannedObjects.Length == 0) return;
-
-        List<IPickable> pickables = new();
-
-        foreach (Collider scannedObject in scannedObjects)
+        if (_shared == null)
         {
-            if (scannedObject != null && scannedObject.gameObject.TryGetComponent(out IPickable pickable))
-            {
-                pickables.Add(pickable);
-            }
+            _spawner.SpawnSeveral(_baseConfig.InitialUnitCount);
+            ConfigureSharedServices(new SharedBaseServices(_inputReader, _basePrefab, _spawnpointsProvider, _baseConfig));
         }
 
-        _resourceGatherer.SendGathering(pickables, _unitRegistry.Units, this);
+        Runtime.StartUnitProduction();           
     }
+    
+    private void Update() => Runtime.Tick();
 
-    private void OnAssigned(Unit unit, IPickable pickable)
+    private void OnDestroy() => Runtime.Dispose();
+
+    public void ConfigureSharedServices(SharedBaseServices shared)
     {
-        _unitRegistry.Release(unit);
-        pickable.DisableForDetection();
-
-        UnitsCountChanged?.Invoke(_unitRegistry.Count);
-    }
-
-    private void OnDelivered(Unit unit, IPickable pickable)
-    {
-        ResourceAvailable++;
-
-        _unitRegistry.Return(unit);
-
-        ResourcesCountChanged?.Invoke(ResourceAvailable);
-        UnitsCountChanged?.Invoke(_unitRegistry.Count);
-    }
-
-    private void Subscribe()
-    {
-        _scanner.ScanPerformed += FilterScanned;
-        _resourceGatherer.Gathered += OnDelivered;
-        _resourceGatherer.Assigned += OnAssigned;
-    }
-
-    private void Unsubscribe()
-    {
-        _scanner.ScanPerformed -= FilterScanned;
-        _resourceGatherer.Gathered -= OnDelivered;
-        _resourceGatherer.Assigned -= OnAssigned;
+        _shared = shared;
+        _creator ??= new BaseCreator(_shared);
+        _baseBuilder.Initialise(Runtime, _creator, _shared.Config);
     }
 }

@@ -2,23 +2,19 @@ using System;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class Scanner : MonoBehaviour
 {
     [SerializeField] private int _limit = 10;
     [SerializeField] private float _radius = 20f;
-    [SerializeField] private LayerMask _layersToScan;
-    [Header("----------------")]
-    [SerializeField, Tooltip("При выкл. сканирование на Q")] 
-    private bool _isTimed;
     [SerializeField] private int _interval = 5;
+    [SerializeField] private LayerMask _layersToScan;
 
-    private PlayerInput _playerInput;
     private Coroutine _scanCoroutine;
 
     public event Action<Collider[]> ScanPerformed;
 
+#if UNITY_EDITOR
     private void OnValidate()
     {
         _interval = Mathf.Max(0, _interval);
@@ -26,35 +22,14 @@ public class Scanner : MonoBehaviour
         if (Application.isPlaying == false)
             return;
 
-        if (_scanCoroutine == null && _isTimed)
-        {
-            _scanCoroutine = StartCoroutine(PerformIntervaledScan());
-        }
-        else if (_scanCoroutine != null && _isTimed == false)
-        {
-            StopCoroutine(_scanCoroutine);
-            _scanCoroutine = null;
-        }
-    }
-
-    private void Awake()
-    {
-        _playerInput = new PlayerInput();
-        _playerInput.Game.Scan.performed += OnScanInputPerformed;
-    }
-
-    private void OnEnable() => _playerInput.Enable();
-    private void OnDisable() => _playerInput.Disable();
-
-    private void Start()
-    {
-        if (_isTimed)
+        if (_scanCoroutine == null)
         {
             _scanCoroutine = StartCoroutine(PerformIntervaledScan());
         }
     }
+#endif
 
-    private void OnDestroy() => _playerInput.Game.Scan.performed -= OnScanInputPerformed;
+    private void Start() => _scanCoroutine = StartCoroutine(PerformIntervaledScan());
 
     public Collider[] Scan(Vector3 position)
     {
@@ -73,17 +48,12 @@ public class Scanner : MonoBehaviour
     {
         var delay = new WaitForSeconds(_interval);
         
-        while(_isTimed)
+        while(enabled)
         {
             Scan(transform.position);
             yield return delay;
         }
 
         _scanCoroutine = null;
-    }
-
-    private void OnScanInputPerformed(InputAction.CallbackContext _)
-    {
-        Scan(transform.position);
     }
 }

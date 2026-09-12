@@ -1,52 +1,49 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class UnitSpawner : MonoBehaviour
 {
-    [SerializeField] private int _spawnAmount;
     [SerializeField] private float _spawnDistance;
     [SerializeField] private Unit _unitPrefab;
 
-    public UnitsRegistry Units { get; private set; }
+    private GameObject _container;
+    private Vector3 _spawnPosition;
+    private Vector3 _lookDirection;
+    private UnitsRegistry _units;
 
-    public void InstantiateUnits()
+    public void Initialise(UnitsRegistry units)
     {
-        GameObject container = new("Units");
-        List<Unit> units = new();
-
         Vector3 cameraPosition = Camera.main.transform.position;
-        float startAngle = GetInitialSpawnAngle(cameraPosition);
+        
+        _units = units;
+        _container = new("Units");
 
-        for (int i = 0; i < _spawnAmount; i++)
-        {
-            Vector3 spawnPosition = GetSpawnPosition(i, startAngle);
-            Vector3 lookDirection = (cameraPosition - spawnPosition).Change(y: 0);
-
-            Unit newUnit = Instantiate(_unitPrefab, spawnPosition, Quaternion.LookRotation(lookDirection), container.transform);
-
-            units.Add(newUnit);
-        }
-
-        Units = new(units);
+        _spawnPosition = GetSpawnPosition(cameraPosition);
+        _lookDirection = (cameraPosition - _spawnPosition).Change(y: 0);
     }
 
-    private float GetInitialSpawnAngle(Vector3 cameraPosition)
+    public void SpawnSeveral(int amount)
+    {
+        for (int i = 0; i < amount; i++)
+        {
+            Spawn();
+        }
+    }
+
+    public void Spawn()
+    {
+        Unit newUnit = Instantiate(_unitPrefab, _spawnPosition, Quaternion.LookRotation(_lookDirection), _container.transform);
+        _units.Register(newUnit);
+    }
+
+    private Vector3 GetSpawnPosition(Vector3 cameraPosition)
     {
         Vector3 directionToCamera = transform.position.DirectionTo(cameraPosition);
 
-        float baseAngle = Mathf.Atan2(directionToCamera.z, directionToCamera.x);
-        
-        return baseAngle - Mathf.PI * MathConstants.Half;
-    }
-
-    private Vector3 GetSpawnPosition(int index, float startAngle)
-    {
-        float step = Mathf.PI / _spawnAmount;
-        float angle = startAngle + step * MathConstants.Half + index * step;
+        float angle = Mathf.Atan2(directionToCamera.z, directionToCamera.x);
 
         float x = _spawnDistance * Mathf.Cos(angle);
         float z = _spawnDistance * Mathf.Sin(angle);
 
-        return new Vector3(x, 0, z);
+        return transform.position + new Vector3(x, 0, z);
     }
 }

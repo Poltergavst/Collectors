@@ -5,22 +5,13 @@ public partial class SpawnpointsProvider
 {
     [SerializeField] private float _pointDisplayRadius = 1;
 
-    void OnValidate()
-    {
-        _radius = Mathf.Max(0, _radius);
-
-        if (_base != null)
-            SetUpPoints();
-    }
-
-
     void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
 
         Gizmos.DrawWireCube(
             new Vector3(transform.position.x, 0, transform.position.z), 
-            new Vector3(_radius, 0, _radius) * 2
+            new Vector3(_areaConfig.Radius, 0, _areaConfig.Radius) * 2
             );
 
         foreach (var zone in _exclusionZones)
@@ -33,7 +24,7 @@ public partial class SpawnpointsProvider
         }
 
         Gizmos.color = Color.green;
-        DrawWireCircle(transform.position, _radius);
+        DrawWireCircle(transform.position, _areaConfig.Radius);
 
         if (_points != null)
         {

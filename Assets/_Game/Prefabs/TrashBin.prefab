@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 7013639762618830119}
   - component: {fileID: 657247638439873271}
   - component: {fileID: 4023845483773834452}
+  - component: {fileID: -377073550727352669}
   m_Layer: 0
   m_Name: TrashBin
   m_TagString: Untagged
@@ -163,6 +164,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Carrier
   _config: {fileID: 11400000, guid: 7177a03f75c5f554fb8f70f960315a7a, type: 2}
   _hand: {fileID: 6903220735929767058}
+--- !u!65 &-377073550727352669
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4186117188032217396}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.8443804, y: 1.8710812, z: 0.8443804}
+  m_Center: {x: 0, y: 0.5387823, z: 0.40443945}
 --- !u!1 &7596606700447531923
 GameObject:
   m_ObjectHideFlags: 0

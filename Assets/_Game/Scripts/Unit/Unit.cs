@@ -1,56 +1,53 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(UnitMover), typeof(ObstacleAvoider), typeof(TargetReacher))]
 [RequireComponent(typeof(Carrier))]
 public class Unit : MonoBehaviour
 {
-    private Carrier _carrier;
     private UnitMover _unitMover;
-    private TargetReacher _reacher;
     private ObstacleAvoider _obstacleAvoider;
+    private Coroutine _tasksCoroutine;
+    private Queue<IUnitTask> _taskQueue;
+
+    public event Action TasksCompleted;
+
+    public Carrier Carrier { get; private set; }
+    public TargetReacher Reacher { get; private set; }
 
     private void Awake()
     {
-        _carrier = GetComponent<Carrier>();
         _unitMover = GetComponent<UnitMover>();
-        _reacher = GetComponent<TargetReacher>();
         _obstacleAvoider = GetComponent<ObstacleAvoider>();
+        _taskQueue = new Queue<IUnitTask>();
 
-        _reacher.Initialize(_unitMover);
+        Carrier = GetComponent<Carrier>();
+        Reacher = GetComponent<TargetReacher>();
+
+        Reacher.Initialize(_unitMover, _obstacleAvoider);
     }
 
-    public IEnumerator NavigateTo(Vector3 target)
+    public void AddTaskToQueue(IUnitTask task)
     {
-        Vector3 direction;
-        float stoppingDistance = 1.25f;
-
-        while (_obstacleAvoider.TryGetWorkaround(target, out direction))
-        {
-            _unitMover.Move(direction);
-            _unitMover.RotateTo(direction);
-
-            yield return null;
-        }
-
-        yield return _reacher.ReachTarget(target, stoppingDistance);
+        _taskQueue.Enqueue(task);
     }
 
-    public IEnumerator ReturnToBase(Base homeBase)
+    public void PerformTasks()
     {
-        float offset = 1f;
-        float baseRadius = homeBase.GetComponent<Collider>().bounds.extents.x + offset;
-        Vector3 basePosition = homeBase.transform.position;
+        if (_tasksCoroutine != null)
+            return;
 
-        yield return _reacher.ReachTarget(basePosition, baseRadius);
-    }
+        _tasksCoroutine = StartCoroutine(PerformTasksCoroutine());
+    }    
 
-    public IEnumerator Collect(IPickable pickable, Base homeBase)
+    private IEnumerator PerformTasksCoroutine()
     {
-        yield return NavigateTo(pickable.GetCoordinates());
-        yield return _carrier.PickUp(pickable);
-        yield return ReturnToBase(homeBase);
-        
-        _carrier.Drop(homeBase.transform.position);
-    }
+        while (_taskQueue.Count > 0)
+            yield return _taskQueue.Dequeue().Execute(this);
+
+        _tasksCoroutine = null;
+        TasksCompleted?.Invoke();
+    }    
 }

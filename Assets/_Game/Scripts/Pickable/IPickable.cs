@@ -2,6 +2,7 @@
 
 public interface IPickable
 {
+    public bool IsDetectable { get; }
     public GameObject GameObject { get; }
 
     public void Despawn();

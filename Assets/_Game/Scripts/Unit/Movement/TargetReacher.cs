@@ -4,18 +4,22 @@ using UnityEngine;
 public class TargetReacher : MonoBehaviour
 {
     private UnitMover _unitMover;
+    private ObstacleAvoider _obstacleAvoider;
 
-    public void Initialize(UnitMover unitMover)
+    public void Initialize(UnitMover unitMover, ObstacleAvoider obstacleAvoider)
     {
         _unitMover = unitMover;
+        _obstacleAvoider = obstacleAvoider;
     }
 
-    public IEnumerator ReachTarget(Vector3 target, float stoppingDistance)
+    public IEnumerator ReachTarget(Transform target, float stoppingDistance)
     {
-        Vector3 direction = transform.position.DirectionTo(target);
+        Vector3 direction = transform.position.DirectionTo(target.position).Change(y:0);
 
-        while (transform.position.IsEnoughCloseTo(target, stoppingDistance) == false)
+        while (transform.position.IsEnoughCloseTo(target.position, stoppingDistance) == false)
         {
+            _obstacleAvoider.TryGetWorkaround(target, out direction);
+
             _unitMover.Move(direction);
             _unitMover.RotateTo(direction);
 

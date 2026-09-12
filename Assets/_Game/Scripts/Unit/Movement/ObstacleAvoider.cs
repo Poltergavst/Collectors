@@ -4,33 +4,38 @@ public class ObstacleAvoider : MonoBehaviour
 {
     [SerializeField] private LayerMask _obstacles;
 
-    public bool TryGetWorkaround(Vector3 targetPosition, out Vector3 direction)
+    public bool TryGetWorkaround(Transform target, out Vector3 direction)
     {
         bool obstacleFound;
         float castDistance = 10f;
         Vector3 obstacleCheckerBounds = Vector3.one * MathConstants.Half;
-        Vector3 targetDirection = transform.position.DirectionTo(targetPosition);
+        Vector3 targetPosition = target.position;
+        Vector3 targetDirection = transform.position.DirectionTo(targetPosition).Change(y: 0);
 
         obstacleFound = Physics.BoxCast(transform.position, obstacleCheckerBounds, targetDirection, 
-            out RaycastHit hit, Quaternion.identity, castDistance, _obstacles); 
+            out RaycastHit hit, Quaternion.identity, castDistance, _obstacles) 
+            && IsHomeBaseAhead(hit, target) == false
+            && IsObstacleCloserThanTarget(hit.point, targetPosition);
 
-        if (obstacleFound && IsObstacleCloserThanTarget(hit.point, targetPosition))
+        if (obstacleFound)
         {
-            direction = GetWorkaroundDirection(targetDirection, hit.normal).Change(y: 0);
-
+            direction = GetWorkaroundDirection(targetDirection, hit.normal);
             return true;
         }
-        else
-        {
-            direction = targetDirection.Change(y: 0);
 
-            return false;
-        }
+        direction = targetDirection;
+
+        return false;
     }
 
     private bool IsObstacleCloserThanTarget(Vector3 obstaclePosition, Vector3 targetPosition)
     {
         return obstaclePosition.SqrDistanceTo(transform.position) < targetPosition.SqrDistanceTo(transform.position);
+    }
+
+    private bool IsHomeBaseAhead(RaycastHit hit, Transform target)
+    {
+        return hit.transform == target;
     }
 
     private Vector3 GetWorkaroundDirection(Vector3 targetDirection, Vector3 obstacleNormal)

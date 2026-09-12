@@ -3,11 +3,10 @@ using UnityEngine;
 
 public partial class SpawnpointsProvider : MonoBehaviour
 {
-    [SerializeField] private Collider _base;
     [SerializeField] private float _spaceBetweenPoints = 2f;
-    [SerializeField] private float _radius = 10f;
     [SerializeField] private float _exclusionExpansion = 1f;
-    [SerializeField] private Collider[] _exclusionZones;
+    [SerializeField] private MapAreaConfig _areaConfig;
+    [SerializeField] private List<Collider> _exclusionZones;
 
     private List<Vector2> _points;
     private HashSet<Vector3> _occupiedPositions;
@@ -17,8 +16,12 @@ public partial class SpawnpointsProvider : MonoBehaviour
     private void Awake()
     {
         _occupiedPositions = new();
-        SetUpPoints();
+        SetUpPoints(_areaConfig.Radius);
     }
+
+    private void OnEnable() => _areaConfig.RadiusChanged += SetUpPoints;
+
+    private void OnDisable() => _areaConfig.RadiusChanged -= SetUpPoints;
 
     public void ReleasePoint(Vector3 position)
     {
@@ -41,9 +44,25 @@ public partial class SpawnpointsProvider : MonoBehaviour
         return position;
     }
 
-    private void SetUpPoints()
+    public void RemovePoint(Vector2 point)
     {
-        Vector2 regionSize = Vector2.one * (_radius * 2);
+        _points.Remove(point);
+    }
+
+    public void AddExclusionZone(Collider collider)
+    {
+        _exclusionZones.Add(collider);
+
+        _points.RemoveAll(point => MustBeExcluded(point, new Vector2(transform.position.x, transform.position.z)));
+
+        Shuffle(_points);
+
+        _index = _points.Count;
+    }
+
+    private void SetUpPoints(float radius)
+    {
+        Vector2 regionSize = Vector2.one * (radius * 2);
         Vector2 regionOrigin = new(transform.position.x, transform.position.z);
 
         _points = PoissonDiscSampling.GeneratePoints(_spaceBetweenPoints, regionSize);
@@ -52,10 +71,7 @@ public partial class SpawnpointsProvider : MonoBehaviour
             _points[i] = regionOrigin - regionSize * MathConstants.Half + _points[i];
 
         _points.RemoveAll(point => MustBeExcluded(point, regionOrigin));
-
         Shuffle(_points);
-
-        _index = _points.Count;
     }
 
     private bool MustBeExcluded(Vector2 p, Vector2 regionOrigin)
@@ -74,7 +90,7 @@ public partial class SpawnpointsProvider : MonoBehaviour
                 return true;
         }
 
-        return regionOrigin.SqrDistanceTo(p) > _radius * _radius;
+        return regionOrigin.SqrDistanceTo(p) > _areaConfig.Radius * _areaConfig.Radius;
     }
 
     private void Shuffle(List<Vector2> points)
@@ -96,7 +112,7 @@ public partial class SpawnpointsProvider : MonoBehaviour
     {
         _index--;
 
-        if (_index < 0)
+        if (_index < 0 || _index >= _points.Count)
         {
             _index = _points.Count - 1;
         }

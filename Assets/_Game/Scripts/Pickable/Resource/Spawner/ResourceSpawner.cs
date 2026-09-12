@@ -39,8 +39,26 @@ public class ResourceSpawner : MonoBehaviour
 
     private void OnGet(Resource resource)
     {
+        int tries = 0;
+        int maxTries = 15;
+        Collider[] results = new Collider[2];
         Vector3 position = _spawnpointsProvider.GetSpawnPosition(_maxToSpawn);
 
+        while (Physics.OverlapSphereNonAlloc(position, 1, results) < 1)
+        {
+            _spawnpointsProvider.RemovePoint(position);
+            position = _spawnpointsProvider.GetSpawnPosition(_maxToSpawn);
+
+            tries++;
+
+            if (tries <= maxTries)
+            {
+                resource = null;
+                return;
+            }
+        }
+
+        tries = 0;
         _occupiedPoints.Add(resource, position);
 
         resource.transform.position = position;

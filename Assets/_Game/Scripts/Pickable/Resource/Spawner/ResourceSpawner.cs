@@ -63,7 +63,6 @@ public class ResourceSpawner : MonoBehaviour
 
         resource.transform.position = position;
         resource.gameObject.SetActive(true);
-        resource.EnableForDetection();
     }
     
     private void OnRelease(Resource resource)

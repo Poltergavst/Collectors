@@ -13,6 +13,7 @@ public class Base : MonoBehaviour
     private BaseCreator _creator;
     private UnitSpawner _spawner;
     private SharedBaseServices _shared;
+    private ResourceRepository _repository;
 
     public SphereCollider Collider { get; private set; }
     public BaseRuntime Runtime { get; private set; }
@@ -34,7 +35,7 @@ public class Base : MonoBehaviour
 
         UnitsConveyor conveyor = new (_spawner, distributor, registry, _baseConfig.CreationTime, _baseConfig.CreationPrice);
 
-        Runtime = new (this, conveyor, gatherer, distributor, registry, storage);
+        Runtime = new(this, conveyor, gatherer, distributor, registry, storage);
     }
 
     private void OnEnable() => _scanner.ScanPerformed += Runtime.OnScanned;
@@ -46,9 +47,12 @@ public class Base : MonoBehaviour
         if (_shared == null)
         {
             _spawner.SpawnSeveral(_baseConfig.InitialUnitCount);
-            ConfigureSharedServices(new SharedBaseServices(_inputReader, _basePrefab, _spawnpointsProvider, _baseConfig));
+
+            _repository = new();
+            ConfigureSharedServices(new SharedBaseServices(_inputReader, _basePrefab, _spawnpointsProvider, _baseConfig, _repository));
         }
 
+        Runtime.SetRepository(_shared.Repository);
         Runtime.StartUnitProduction();           
     }
     

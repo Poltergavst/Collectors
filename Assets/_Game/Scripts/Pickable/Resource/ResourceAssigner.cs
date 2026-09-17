@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 public class ResourceAssigner
 {
-    public List<CollectionPair> AssignResources(List<IPickable> pickables, IEnumerable<Unit> units)
+    public List<CollectionPair> AssignResources(IReadOnlyCollection<IPickable> pickables, IEnumerable<Unit> units)
     {
         var usedUnits = new HashSet<Unit>();
         var usedPickables = new HashSet<IPickable>();
@@ -28,7 +28,7 @@ public class ResourceAssigner
         return assignedPairs;
     }
 
-    private List<CollectionPair> GatherPairsByDistance(List<IPickable> pickables, IEnumerable<Unit> units)
+    private List<CollectionPair> GatherPairsByDistance(IReadOnlyCollection<IPickable> pickables, IEnumerable<Unit> units)
     {
         var pairs = new List<CollectionPair>();
 

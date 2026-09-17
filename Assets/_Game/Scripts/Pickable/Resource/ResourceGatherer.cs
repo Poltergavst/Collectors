@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ResourceGatherer
@@ -13,15 +12,15 @@ public class ResourceGatherer
         _assigner = new();
     }
 
-    public void SendGathering(List<IPickable> resources, UnitsRegistry units, Transform baseTransform, float baseRadius)
+    public void SendGathering(ResourceRepository repository, UnitsRegistry units, Transform baseTransform, float baseRadius)
     {
-        var assignedPairs = _assigner.AssignResources(resources, units.Units);
+        var assignedPairs = _assigner.AssignResources(repository.FreeResources, units.Units);
 
         foreach (var pair in assignedPairs)
         {
             if (units.TryRelease(pair.Unit))
             {
-                pair.Pickable.DisableForDetection();
+                repository.AddToTaken(pair.Pickable);
                 SendUnit(pair.Unit, pair.Pickable, baseTransform, baseRadius);
             }
         }

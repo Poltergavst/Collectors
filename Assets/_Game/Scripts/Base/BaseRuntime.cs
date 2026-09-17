@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEngine;
 
 public class BaseRuntime
@@ -7,8 +6,10 @@ public class BaseRuntime
     private UnitsConveyor _conveyor;
     private ResourceGatherer _gatherer;
     private ResourceDistributor _distributor;
+    private ResourceRepository _repository;
 
-    public BaseRuntime(Base @base, UnitsConveyor conveyor, ResourceGatherer gatherer, ResourceDistributor resourceDistributor, UnitsRegistry unitRegistry, ResourceStorage resourceStorage)
+    public BaseRuntime(Base @base, UnitsConveyor conveyor, ResourceGatherer gatherer, ResourceDistributor resourceDistributor,
+        UnitsRegistry unitRegistry, ResourceStorage resourceStorage)
     {
         _base = @base;
         _conveyor = conveyor;
@@ -26,6 +27,8 @@ public class BaseRuntime
 
     public void StartUnitProduction() => _conveyor.Start();
 
+    public void SetRepository(ResourceRepository repository) => _repository = repository;
+
     public void Tick()
     {
         _distributor.ProcessRequests();
@@ -34,15 +37,21 @@ public class BaseRuntime
 
     public void OnScanned(Collider[] scannedObjects)
     {
-        if (scannedObjects.Length == 0)
+        if (_repository == null || scannedObjects.Length == 0)
             return;
 
-        var pickables = scannedObjects
-            .Select(scanned => scanned != null ? scanned.gameObject.GetComponent<IPickable>() : null)
-            .Where(pickable => pickable != null && pickable.IsDetectable)
-            .ToList();
+        foreach ( var scanned in scannedObjects )
+        {
+            if (scanned == null)
+                continue; 
 
-        _gatherer.SendGathering(pickables, UnitRegistry, _base.transform, _base.Collider.bounds.extents.x);
+            if (scanned.gameObject.TryGetComponent(out IPickable pickable))
+            {
+                _repository.Add(pickable);
+            }
+        }
+
+        _gatherer.SendGathering(_repository, UnitRegistry, _base.transform, _base.Collider.bounds.extents.x);
     }
 
     public void RequestUnits(UnitRequest unitRequest) => UnitRegistry.MakeRequest(unitRequest);
@@ -55,5 +64,6 @@ public class BaseRuntime
     {
         ResourceStorage.GainResources(1);
         UnitRegistry.Return(unit);
+        _repository.FreeResource(pickable);
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Linq;
 using UnityEngine;
 
 public class Scanner : MonoBehaviour
@@ -10,7 +9,9 @@ public class Scanner : MonoBehaviour
     [SerializeField] private int _interval = 5;
     [SerializeField] private LayerMask _layersToScan;
 
+    private Collider[] _results;
     private Coroutine _scanCoroutine;
+    private ColliderDistanceComparer _comparer;
 
     public event Action<Collider[]> ScanPerformed;
 
@@ -22,33 +23,37 @@ public class Scanner : MonoBehaviour
         if (Application.isPlaying == false)
             return;
 
-        if (_scanCoroutine == null)
+        if (_scanCoroutine == null && _results != null)
         {
             _scanCoroutine = StartCoroutine(PerformIntervaledScan());
         }
     }
 #endif
 
-    private void Start() => _scanCoroutine = StartCoroutine(PerformIntervaledScan());
-
-    public Collider[] Scan(Vector3 position)
+    private void Start()
     {
-        Collider[] results = new Collider[_limit];
+        _results = new Collider[_limit];
+        _comparer = new ColliderDistanceComparer();
+        _scanCoroutine = StartCoroutine(PerformIntervaledScan());
+    }
 
-        Physics.OverlapSphereNonAlloc(position, _radius, results, _layersToScan);
+    private Collider[] Scan(Vector3 position)
+    {
+        int count = Physics.OverlapSphereNonAlloc(position, _radius, _results, _layersToScan);
 
-        results = results.Where(collider => collider != null).OrderBy(collider => (collider.transform.position - position).sqrMagnitude).ToArray();
+        _comparer.SetPoistion(position);
+        Array.Sort(_results, 0, count, _comparer);
 
-        ScanPerformed?.Invoke(results);
+        ScanPerformed?.Invoke(_results);
 
-        return results;
+        return _results;
     }
 
     private IEnumerator PerformIntervaledScan()
     {
         var delay = new WaitForSeconds(_interval);
-        
-        while(enabled)
+
+        while (enabled)
         {
             Scan(transform.position);
             yield return delay;

@@ -42,10 +42,11 @@ public class UnitsRegistry : RequestMaker<UnitRequest>
     {
         if (IsEnough(1))
         {
-            _availableUnits.Remove(unit);
-            UnitsCountChanged?.Invoke(Count);
-
-            return true;
+            if (_availableUnits.Remove(unit))
+            {
+                UnitsCountChanged?.Invoke(Count);
+                return true;
+            }
         }
 
         return false;

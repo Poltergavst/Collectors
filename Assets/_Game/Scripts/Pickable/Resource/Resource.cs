@@ -3,8 +3,6 @@ using UnityEngine;
 public class Resource : MonoBehaviour, IPickable
 {
     private ResourceSpawner _spawner;
-
-    public bool IsDetectable { get; private set; } = true;
     public GameObject GameObject => gameObject;
 
     public Vector3 GetCoordinates() => transform.position;
@@ -16,8 +14,4 @@ public class Resource : MonoBehaviour, IPickable
         transform.SetParent(_spawner.gameObject.transform);
         _spawner.Release(this);
     }
-
-    public void DisableForDetection() => IsDetectable = false;
-
-    public void EnableForDetection() => IsDetectable = true;
 }
